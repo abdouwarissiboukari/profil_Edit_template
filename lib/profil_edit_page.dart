@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:profil_editing/profil.dart';
 
 class ProfilEditPage extends StatefulWidget {
@@ -47,6 +51,9 @@ class ProfilEditPageState extends State<ProfilEditPage> {
     4: "Python"
   };
 
+  File? imageFile;
+  ImagePicker picker = ImagePicker();
+
   Color colorAccent = Colors.deepPurple;
   Color colorLight = Colors.deepPurple.shade300;
   Color colorTitle = Colors.white;
@@ -93,6 +100,7 @@ class ProfilEditPageState extends State<ProfilEditPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             displayInfos(),
+            imagePickerRow(),
             Divider(
               color: colorAccent,
               thickness: 2,
@@ -320,10 +328,27 @@ class ProfilEditPageState extends State<ProfilEditPage> {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(
-                profil.userName(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: CircleAvatar(
+                  backgroundColor: colorTitle,
+                  radius: 60,
+                  child: CircleAvatar(
+                    backgroundColor: colorLight,
+                    radius: 57,
+                    backgroundImage: (imageFile == null)
+                        ? null
+                        : Image.file(imageFile!).image,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  profil.userName(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
               Text(
                 profil.userAge(),
@@ -364,10 +389,66 @@ class ProfilEditPageState extends State<ProfilEditPage> {
                   : Container(
                       height: 0,
                       width: 0,
-                    )
+                    ),
             ],
           ),
         ));
+  }
+
+  Widget imagePickerRow() {
+    return Container(
+      height: 40,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4, bottom: 0),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            FloatingActionButton(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              onPressed: () {
+                imagePicker(2);
+              },
+              child: Icon(
+                Icons.camera_enhance,
+                color: colorAccent,
+                size: 30,
+              ),
+            ),
+            FloatingActionButton(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              onPressed: () {
+                imagePicker(1);
+              },
+              child: Icon(
+                Icons.image,
+                color: colorAccent,
+                size: 30,
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future imagePicker(int choice) async {
+    XFile? imageSelect;
+    if (choice == 1) {
+      imageSelect = await picker.pickImage(source: ImageSource.gallery);
+    } else if (choice == 2) {
+      imageSelect = await picker.pickImage(source: ImageSource.camera);
+    }
+
+    setState(() {
+      if (imageSelect == null) {
+        imageFile = null;
+      } else {
+        imageFile = File(imageSelect.path);
+      }
+    });
   }
 
   int toInto(String text) {
